@@ -5,8 +5,8 @@ const mediaSelect = document.querySelector("#media");
 const vendorSelect = document.querySelector("#vendor");
 const routingLabel = document.querySelector("#routing-label");
 const routingInput = document.querySelector("#routing");
-const connectionList = document.querySelector("#connection-list");
-const verificationList = document.querySelector("#verification-list");
+const terminal = document.querySelector("#terminal");
+const copyButton = document.querySelector("#copy");
 const tags = {
   siteA: document.querySelector('[data-tag="siteA"]'),
   siteZ: document.querySelector('[data-tag="siteZ"]'),
@@ -85,45 +85,35 @@ const updateRoutingLabel = () => {
     vendor === "Cisco" ? "e.g., VRF-ACME" : vendor === "Huawei" ? "e.g., VPN-ACME" : "e.g., RI-ACME";
 };
 
-const buildCiscoL3Commands = (values) => {
+const buildCiscoL3 = (values) => {
   const safeInterface = values.interface || "<Interface>";
   const safeRouting = values.routing || "<VRF_Name>";
   const safeCustomerIp = values.customerIp || "<Customer_IP>";
   const safeCircuitId = values.circuitId || "<Circuit_ID>";
-  return [
-    {
-      description: "Check Interface Description & Status",
-      command: `sh int desc | i ${safeCircuitId}`,
-    },
-    {
-      description: "Check Interface Configuration",
-      command: `sh run int ${safeInterface}`,
-    },
-    {
-      description: "Verify Bridge Domain Status (if applicable)",
-      command: `sh l2vpn bridge-domain interface ${safeInterface} brief`,
-    },
-    {
-      description: "Check L2VPN Bridge Group",
-      command: `sh run l2vpn bridge group ${safeRouting} bridge-domain ${values.vlan}`,
-    },
-    {
-      description: "Verify L3 Interface Configuration",
-      command: `sh run int ${safeInterface}`,
-    },
-    {
-      description: "Check ARP Table for Customer Reachability",
-      command: `sh arp vrf ${safeRouting} ${safeCustomerIp}`,
-    },
-    {
-      description: "Connectivity Test (Ping)",
-      command: `ping vrf ${safeRouting} ${safeCustomerIp} count 100`,
-    },
-    {
-      description: "Check BGP Neighbors (if applicable)",
-      command: `show bgp vrf ${safeRouting} summary | i ${safeCustomerIp}`,
-    },
-  ];
+  return `! --- VERIFICATION CHEAT SHEET FOR ${safeCircuitId} ---
+! 1. Check Interface Description & Status
+sh int desc | i ${safeCircuitId}
+
+! 2. Check Interface Configuration
+sh run int ${safeInterface}
+
+! 3. Verify Bridge Domain Status (if applicable)
+sh l2vpn bridge-domain interface ${safeInterface} brief
+
+! 4. Check L2VPN Bridge Group
+sh run l2vpn bridge group ${safeRouting} bridge-domain ${values.vlan}
+
+! 5. Verify L3 Interface (BVI) Configuration
+sh run int BVI${values.vlan}
+
+! 6. Check ARP Table for Customer Reachability
+sh arp vrf ${safeRouting} ${safeCustomerIp}
+
+! 7. Connectivity Test (Ping)
+ping vrf ${safeRouting} ${safeCustomerIp} count 100
+
+! 8. Check BGP Neighbors (if applicable)
+show bgp vrf ${safeRouting} summary | i ${safeCustomerIp}`;
 };
 
 const collectValues = () => {
@@ -162,90 +152,34 @@ const validate = (values) => {
   return "";
 };
 
-const buildConnectionCommands = (values) => {
-  const safeAggregator = values.aggregator || "<Aggregator_PE_Name>";
-  if (values.media === "UPE") {
-    const safeUpe = values.upe || "<UPE_Name>";
-    return [
-      { description: "Connect via Aggregator", command: `connect ${safeAggregator}` },
-      { description: "Connect via UPE", command: `connect ${safeUpe}` },
-    ];
-  }
-  return [{ description: "Connect via Aggregator", command: `connect ${safeAggregator}` }];
-};
-
-const renderEmptyState = (listElement, message) => {
-  listElement.innerHTML = "";
-  const row = document.createElement("div");
-  row.className = "command-row empty";
-  row.textContent = message;
-  listElement.appendChild(row);
-};
-
-const createCommandRow = ({ description, command }) => {
-  const row = document.createElement("div");
-  row.className = "command-row";
-
-  const desc = document.createElement("div");
-  desc.className = "command-desc";
-  desc.textContent = description;
-
-  const code = document.createElement("div");
-  code.className = "command-code";
-  code.textContent = command;
-
-  const copy = document.createElement("button");
-  copy.className = "copy-line";
-  copy.type = "button";
-  copy.textContent = "Copy";
-  copy.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(command);
-      copy.textContent = "Copied";
-      setTimeout(() => {
-        copy.textContent = "Copy";
-      }, 1500);
-    } catch (error) {
-      copy.textContent = "Error";
-      setTimeout(() => {
-        copy.textContent = "Copy";
-      }, 1500);
-    }
-  });
-
-  row.append(desc, code, copy);
-  return row;
-};
-
-const renderCommandList = (listElement, commands, emptyMessage) => {
-  listElement.innerHTML = "";
-  if (!commands.length) {
-    renderEmptyState(listElement, emptyMessage);
-    return;
-  }
-  commands.forEach((command) => listElement.appendChild(createCommandRow(command)));
-};
-
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const values = collectValues();
   const error = validate(values);
   if (error) {
-    renderEmptyState(connectionList, "Awaiting command generation...");
-    renderEmptyState(verificationList, `⚠️ ${error}`);
+    terminal.textContent = `⚠️ ${error}`;
+    copyButton.disabled = true;
     return;
   }
 
-  renderCommandList(connectionList, buildConnectionCommands(values), "No connection commands available.");
-
   if (values.vendor === "Cisco" && values.layer === "layer3") {
-    renderCommandList(
-      verificationList,
-      buildCiscoL3Commands(values),
-      "No verification commands available."
-    );
+    terminal.textContent = buildCiscoL3(values);
   } else {
-    renderEmptyState(verificationList, "Command template not available for the selected vendor/layer yet.");
+    terminal.textContent = "Command template not available for the selected vendor/layer yet.";
+  }
+
+  copyButton.disabled = false;
+});
+
+copyButton.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(terminal.textContent);
+    copyButton.textContent = "Copied!";
+    setTimeout(() => {
+      copyButton.textContent = "Copy to Clipboard";
+    }, 1500);
+  } catch (error) {
+    terminal.textContent = `⚠️ Unable to copy: ${error.message}`;
   }
 });
 
@@ -261,5 +195,3 @@ parseCircuit(circuitInput.value);
 toggleMediaFields();
 toggleLayerFields();
 updateRoutingLabel();
-renderEmptyState(connectionList, "Awaiting command generation...");
-renderEmptyState(verificationList, "Awaiting command generation...");

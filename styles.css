@@ -161,7 +161,7 @@ input::placeholder {
 
 .output {
   display: grid;
-  gap: 20px;
+  gap: 16px;
 }
 
 .output-header {
@@ -171,64 +171,15 @@ input::placeholder {
   gap: 16px;
 }
 
-.command-group {
-  display: grid;
-  gap: 12px;
-}
-
-.command-group h3 {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-}
-
-.command-list {
-  display: grid;
-  gap: 12px;
-}
-
-.command-row {
-  display: grid;
-  grid-template-columns: minmax(180px, 1.3fr) minmax(220px, 2fr) auto;
-  gap: 12px;
-  align-items: center;
+.terminal {
   background: #0a0f15;
   border-radius: 14px;
-  padding: 16px;
-  border: 1px solid rgba(36, 48, 66, 0.7);
-}
-
-.command-row.empty {
-  grid-template-columns: 1fr;
-  color: var(--muted);
-  font-style: italic;
-}
-
-.command-desc {
-  font-size: 13px;
-  color: #c6d2e5;
-}
-
-.command-code {
+  padding: 20px;
   font-family: "JetBrains Mono", "SFMono-Regular", monospace;
   font-size: 13px;
   color: #d7e3f5;
-  word-break: break-word;
-}
-
-.copy-line {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.copy-line:active {
-  transform: translateY(1px);
+  min-height: 240px;
+  white-space: pre-wrap;
 }
 
 .hidden {
@@ -238,11 +189,6 @@ input::placeholder {
 @media (max-width: 720px) {
   .output-header {
     flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .command-row {
-    grid-template-columns: 1fr;
     align-items: flex-start;
   }
 }

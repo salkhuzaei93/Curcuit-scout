@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Circuit Scout - ISP Verification Assistant</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <p class="eyebrow">Circuit Scout</p>
+        <h1>Circuit Verification Generator</h1>
+        <p class="subhead">Generate an ISP-ready CLI cheat sheet in seconds.</p>
+      </header>
+
+      <section class="card">
+        <form id="circuit-form">
+          <div class="form-row">
+            <label for="circuit-name">Circuit Name</label>
+            <input
+              id="circuit-name"
+              name="circuitName"
+              type="text"
+              placeholder="e.g., JEDDAH-MAKKAH IP263"
+              autocomplete="off"
+              required
+            />
+            <div class="tag-row" id="circuit-tags">
+              <span class="tag" data-tag="siteA">Site A</span>
+              <span class="tag" data-tag="siteZ">Site Z</span>
+              <span class="tag" data-tag="circuitId">Circuit ID</span>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="layer">Layer Selector</label>
+              <select id="layer" name="layer">
+                <option value="layer2">Layer 2</option>
+                <option value="layer3">Layer 3</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="order-type">Order Type</label>
+              <select id="order-type" name="orderType">
+                <option value="I-Order">New Installation (I-Order)</option>
+                <option value="M-Order">Migration (M-Order)</option>
+                <option value="C-Order">Upgrade/Downgrade (C-Order)</option>
+                <option value="O-Order">Cancellation (O-Order)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="media">Media</label>
+              <select id="media" name="media">
+                <option value="Fiber">Fiber</option>
+                <option value="Copper">Copper</option>
+                <option value="Transmission">Transmission</option>
+                <option value="UPE">UPE</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="vendor">Vendor</label>
+              <select id="vendor" name="vendor">
+                <option value="Cisco">Cisco</option>
+                <option value="Huawei">Huawei</option>
+                <option value="Juniper">Juniper</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="aggregator">Aggregator PE Name</label>
+              <input id="aggregator" name="aggregator" type="text" placeholder="e.g., AGG-PE-01" />
+            </div>
+            <div class="form-row" id="upe-row">
+              <label for="upe">UPE Name</label>
+              <input id="upe" name="upe" type="text" placeholder="e.g., UPE-01" />
+            </div>
+            <div class="form-row">
+              <label for="routing" id="routing-label">VRF Name</label>
+              <input id="routing" name="routing" type="text" placeholder="e.g., VRF-ACME" />
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="vlan">VLAN ID<span class="required">*</span></label>
+              <input id="vlan" name="vlan" type="number" min="1" max="4094" required />
+            </div>
+            <div class="form-row">
+              <label for="interface">Interface</label>
+              <input id="interface" name="interface" type="text" placeholder="e.g., Gi0/0/1" />
+            </div>
+            <div class="form-row" id="customer-ip-row">
+              <label for="customer-ip">Customer IP</label>
+              <input id="customer-ip" name="customerIp" type="text" placeholder="e.g., 192.0.2.10" />
+            </div>
+            <div class="form-row" id="gateway-row">
+              <label for="gateway">Default Gateway</label>
+              <input id="gateway" name="gateway" type="text" placeholder="e.g., 192.0.2.1" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="primary">Generate Commands</button>
+            <span class="hint">Show/Display commands only. No config changes.</span>
+          </div>
+        </form>
+      </section>
+
+      <section class="card output" aria-live="polite">
+        <div class="output-header">
+          <div>
+            <h2>Command Terminal</h2>
+            <p class="subhead">CLI cheat sheet will appear here.</p>
+          </div>
+          <button id="copy" class="ghost" type="button" disabled>Copy to Clipboard</button>
+        </div>
+        <pre class="terminal" id="terminal">Awaiting command generation...</pre>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
